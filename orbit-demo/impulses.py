@@ -1,6 +1,6 @@
 
 from orbits import OrbitalState
-from vector import Vector2D
+from toolkit.vector import Vector2D
 from toolkit import rotate_2d
 
 

@@ -9,10 +9,10 @@ from numpy import deg2rad
 # local imports
 from orbits import OrbitalState
 from orbits import conic_from_state
-from artists import ConicArtist, OrbitalStateArtist, ImpulseArtist
-from conics import conic_semimajor_axis
 from impulses import add_impulse_vector, calculate_impulse
-from vector import Vector2D
+from toolkit.conics import conic_semimajor_axis
+from toolkit.vector import Vector2D
+from .artists import ConicArtist, OrbitalStateArtist, ImpulseArtist
 
 
 def get_conic_scale(conic):
@@ -34,7 +34,9 @@ class OrbitImpulseUI:
         self.figure.subplots_adjust(bottom=0.25)
         
         # calculate initial state
-        _initial_state = OrbitalState.from_state_components(1, 0, initial_speed, initial_angle)
+        _initial_state = OrbitalState.from_state_components(
+            1, 0, initial_speed, initial_angle
+        )
         _initial_conic = conic_from_state(_initial_state, gm=1)
         
         # add main display axes
@@ -121,7 +123,8 @@ class OrbitImpulseUI:
             facecolor='C1',
         )
         
-        # create a `matplotlib.widgets.Button` to reset sliders to initial values
+        # create a `matplotlib.widgets.Button` to reset sliders to initial
+        # values
         _reset_button = Button(
             ax=self.figure.add_axes([0.8, 0.025, 0.1, 0.04]), 
             label='Reset', 
@@ -141,7 +144,10 @@ class OrbitImpulseUI:
         }
         
         # register callbacks
-        _sliders = ('speed_slider', 'angle_slider', 'impulse_speed_slider', 'impulse_angle_slider')
+        _sliders = (
+            'speed_slider', 'angle_slider',
+            'impulse_speed_slider', 'impulse_angle_slider'
+        )
         for _, slider in self.sliders.items():
             slider.on_changed(self.update)
             

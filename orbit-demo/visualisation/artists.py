@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.patches as mpatches
 
 # local imports
-from vector import Vector2D
+from toolkit.vector import Vector2D
 from toolkit import rotate_2d
 
 

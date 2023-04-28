@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 
 from orbits_toolkit import orbital_elements_from_state
 from orbits_toolkit import orbital_state_from_elements
-from vector import Vector2D
-from conics import ConicSection
+from toolkit.vector import Vector2D
+from toolkit.conics import ConicSection
 from toolkit import angle_add, angle_sub
 
 from numpy import pi as PI

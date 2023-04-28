@@ -6,7 +6,7 @@ Functions to convert between orbital elements and orbital state.
 
 import numpy as np
 
-from conics import conic_radius
+from toolkit.conics import conic_radius
 from toolkit import angle_sub, angle_add
 
 
