@@ -49,7 +49,7 @@ class ConicSection:
     def apoapsis(self):
         return conic_apoapsis(self.e, self.l)
 
-    def locus(self, num_segment=3000):
+    def locus(self, num_segment=3000, polar=False):
         """Points on the principal branch of the conic section."""
         # determine range
         _max = (PI if self.e < 1 else np.arccos(-1./self.e))
@@ -60,11 +60,14 @@ class ConicSection:
             _anomaly = _anomaly[1:-1]
     
         # compute radii
-        _r = conic_radius(_anomaly, self.e, self.l)
+        r = conic_radius(_anomaly, self.e, self.l)
 
-        # compute coordinates in apside-centred frame
-        _x, _y = cartesian_from_polar2d(_r, _anomaly)
+        if polar:
+            return r, angle_sub(_anomaly, -self.angle0)
+        else:
+            # compute coordinates in apside-centred frame
+            _x, _y = cartesian_from_polar2d(r, _anomaly)
     
-        # rotate from apside-centred frame to reference frame 
-        return rotate_2d(_x, _y, -self.angle0)
+            # rotate from apside-centred frame to reference frame 
+            return rotate_2d(_x, _y, -self.angle0)
     

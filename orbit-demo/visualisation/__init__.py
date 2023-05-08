@@ -40,13 +40,14 @@ class OrbitImpulseUI:
         _initial_conic = conic_from_state(_initial_state, gm=1)
         
         # add main display axes
-        self.ax = fig.add_subplot()
-        self.ax.set_aspect('equal')
+        self.ax = fig.add_subplot(projection='polar')
+#        self.ax.set_aspect('equal')
         self.ax.grid(True)
         
         # set axis scale
         _scale = 1.3 * get_conic_scale(_initial_conic)
-        set_xylims(self.ax, 1.1 * _scale, ratio=0.5)
+#        self.ax.set_rmax(_scale)
+#        set_xylims(self.ax, 1.1 * _scale, ratio=0.5)
         
         # initialise artists
         _old_orbit = ConicArtist(self.ax, _initial_conic, c='C0', zorder=2)
@@ -152,6 +153,8 @@ class OrbitImpulseUI:
             slider.on_changed(self.update)
             
         self.widgets['reset_button'].on_clicked(self.reset)
+
+        self.ax.set_rmax(_scale)
         
     def reset(self, event):
         for _, slider in self.sliders.items():
@@ -192,7 +195,8 @@ class OrbitImpulseUI:
         
         # update axis scale
         _scale = 1.3 * max(get_conic_scale(c) for c in (_old_conic, _new_conic))
-        set_xylims(self.ax, 1.1 * _scale, ratio=0.5)
+#        set_xylims(self.ax, 1.1 * _scale, ratio=0.5)
+        self.ax.set_rmax(_scale)
         
         # redraw the figure
         self.figure.canvas.draw_idle()
