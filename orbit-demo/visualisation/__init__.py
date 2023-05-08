@@ -14,6 +14,23 @@ from toolkit.conics import conic_semimajor_axis
 from toolkit.vector import Vector2D
 from .artists import ConicArtist, OrbitalStateArtist, ImpulseArtist
 
+# axes positions
+MAIN_AXES = [0.05, 0.15, 0.5, 0.7]
+SPEED_SLIDER = [0.60, 0.3, 0.15, 0.03]
+ANGLE_SLIDER = [0.80, 0.3, 0.15, 0.03]
+IMPULSE_SPEED_SLIDER = [0.60, 0.15, 0.15, 0.03]
+IMPULSE_ANGLE_SLIDER = [0.80, 0.15, 0.15, 0.03]
+RESET_BUTTON = [0.85, 0.1, 0.1, 0.04]
+#MAIN_AXES = [0.125, 0.25, 0.775, 0.63]
+#SPEED_SLIDER = [0.10, 0.150, 0.3, 0.03]
+#ANGLE_SLIDER = [0.10, 0.075, 0.3, 0.03]
+#IMPULSE_SPEED_SLIDER = [0.60, 0.150, 0.3, 0.03]
+#IMPULSE_ANGLE_SLIDER = [0.60, 0.075, 0.3, 0.03]
+#RESET_BUTTON = [0.8, 0.025, 0.1, 0.04]
+
+# label positions
+VELOCITY_LABEL = [0.60, 0.375]
+IMPULSE_LABEL = [0.60, 0.225]
 
 def get_conic_scale(conic):
     """Determine characteristic length scale for conic."""
@@ -27,11 +44,32 @@ def set_xylims(ax, lim, ratio=1):
     ax.set_ylim(-lim*ratio, lim*ratio)
 
 
+def format_slider_label(slider, xy, va, ha):
+    label = slider.label
+    label.set_position(xy)
+    label.set_verticalalignment(va)
+    label.set_horizontalalignment(ha)
+    return label
+
+def format_slider(slider):
+    """Formats the slider label and text value."""
+    label = slider.label
+    label.set_position((0.0, 1.02))
+    label.set_verticalalignment('bottom')
+    label.set_horizontalalignment('left')
+
+    valtext = slider.valtext
+    valtext.set_position((1.0, 1.02))
+    valtext.set_verticalalignment('bottom')
+    valtext.set_horizontalalignment('right')
+
+    return label, valtext
+
+
 class OrbitImpulseUI:
     def __init__(self, fig, initial_speed, initial_angle, speed_scale):
         """Initialiser."""
         self.figure = fig
-        self.figure.subplots_adjust(bottom=0.25)
         
         # calculate initial state
         _initial_state = OrbitalState.from_state_components(
@@ -40,15 +78,9 @@ class OrbitImpulseUI:
         _initial_conic = conic_from_state(_initial_state, gm=1)
         
         # add main display axes
-        self.ax = fig.add_subplot(projection='polar')
-#        self.ax.set_aspect('equal')
+        self.ax = fig.add_axes(MAIN_AXES, projection='polar')
         self.ax.grid(True)
-        
-        # set axis scale
-        _scale = 1.3 * get_conic_scale(_initial_conic)
-#        self.ax.set_rmax(_scale)
-#        set_xylims(self.ax, 1.1 * _scale, ratio=0.5)
-        
+
         # initialise artists
         _old_orbit = ConicArtist(self.ax, _initial_conic, c='C0', zorder=2)
         
@@ -79,47 +111,70 @@ class OrbitImpulseUI:
         
         # static artists:
         _static_artists = [
-            mpatches.Circle((0, 0), (0.10), ec='none', fc='C0', zorder=10),
-            mpatches.Circle((1, 0), (0.05), ec='none', fc='C0', zorder=10),
+            mpatches.Circle((0, 0), (0.10), ec='none', fc='C0', zorder=10,
+                            transform=self.ax.transData._b),
+            mpatches.Circle((1, 0), (0.05), ec='none', fc='C0', zorder=10,
+                            transform=self.ax.transData._b),
         ]
         for _artist in _static_artists:
             self.ax.add_artist(_artist)
+
+        # static labels
+        self.figure.text(
+            *VELOCITY_LABEL, 'Velocity',
+            ha='left', va='bottom',
+            fontweight='bold',
+        )
+        self.figure.text(
+            *IMPULSE_LABEL, 'Impulse',
+            ha='left', va='bottom',
+            fontweight='bold',
+        )
+
         
         # add slider to control the speed
         _speed_slider = Slider(
-            ax=self.figure.add_axes([0.10, 0.150, 0.3, 0.03]),
-            label=r'Speed / $v_{circ}$',
+            ax=self.figure.add_axes(SPEED_SLIDER),
+            label=r'Speed / $v_\mathdefault{circ}$',
             valmin=0.1,
             valmax=2.0,
             valinit=initial_speed,
+            valstep=0.01,
+            valfmt='%.2f',
+            facecolor='C0',
         )
 
         # add slider to control the angle
         _angle_slider = Slider(
-            ax=self.figure.add_axes([0.10, 0.075, 0.3, 0.03]),
+            ax=self.figure.add_axes(ANGLE_SLIDER),
             label='Angle',
             valmin=-89,
             valmax=+89,
             valinit=initial_angle,
-            valfmt='%.0f\u00B0'
+            valstep=1.0,
+            valfmt='%.0f\u00B0',
+            facecolor='C0',
         )
 
         # add sliders to control the impulse speed & angle
         _impulse_speed_slider = Slider(
-            ax=self.figure.add_axes([0.60, 0.150, 0.3, 0.03]),
-            label=r'Impulse / $v_{circ}$',
+            ax=self.figure.add_axes(IMPULSE_SPEED_SLIDER),
+            label=r'Magnitude / $v_\mathdefault{circ}$',
             valmin=0,
             valmax=1.,
             valinit=0,
+            valstep=0.01,
+            valfmt='%.2f',
             facecolor='C1',
         )
 
         _impulse_angle_slider = Slider(
-            ax=self.figure.add_axes([0.60, 0.075, 0.3, 0.03]),
-            label='Impulse Angle',
+            ax=self.figure.add_axes(IMPULSE_ANGLE_SLIDER),
+            label='Direction',
             valmin=-180,
             valmax=+180,
             valinit=0,
+            valstep=1.0,
             valfmt='%.0f\u00B0',
             facecolor='C1',
         )
@@ -127,9 +182,9 @@ class OrbitImpulseUI:
         # create a `matplotlib.widgets.Button` to reset sliders to initial
         # values
         _reset_button = Button(
-            ax=self.figure.add_axes([0.8, 0.025, 0.1, 0.04]), 
-            label='Reset', 
-            hovercolor='0.975'
+            ax=self.figure.add_axes(RESET_BUTTON),
+            label='Reset',
+            hovercolor='0.975',
         )
         
         self.sliders = {
@@ -138,29 +193,29 @@ class OrbitImpulseUI:
             'impulse_speed_slider' : _impulse_speed_slider,
             'impulse_angle_slider' : _impulse_angle_slider,
         }
-        
+
         self.widgets = {
             **self.sliders, 
             'reset_button' : _reset_button,
         }
-        
+
+        for _, slider in self.sliders.items():
+            format_slider(slider)
+
         # register callbacks
-        _sliders = (
-            'speed_slider', 'angle_slider',
-            'impulse_speed_slider', 'impulse_angle_slider'
-        )
         for _, slider in self.sliders.items():
             slider.on_changed(self.update)
-            
+
         self.widgets['reset_button'].on_clicked(self.reset)
 
+        # set axis scale - this has to happen after drawing?
+        _scale = 1.3 * get_conic_scale(_initial_conic)
         self.ax.set_rmax(_scale)
-        
+
+
     def reset(self, event):
         for _, slider in self.sliders.items():
             slider.reset()
-#        self.widgets['speed_slider'].reset()
-#        self.widgets['angle_slider'].reset()
         
     def update(self, val):
         # new values
